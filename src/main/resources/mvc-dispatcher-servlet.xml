@@ -1,0 +1,95 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/data/jpa  http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+            http://www.springframework.org/schema/security
+	        http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+    <context:annotation-config/>
+    <context:component-scan base-package="com.nikulin.testtask"/>
+    <mvc:annotation-driven/>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:mem:testDB"/>
+        <property name="username" value="sa"/>
+        <property name="password" value=""/>
+    </bean>
+
+    <bean id="flyway" class="com.googlecode.flyway.core.Flyway" init-method="migrate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+
+    <jpa:repositories base-package="com.nikulin.testtask.server.dao.repository"/>
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+          depends-on="flyway">
+        <property name="persistenceProvider">
+            <bean class="org.hibernate.ejb.HibernatePersistence"/>
+        </property>
+
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaPropertyMap" ref="jpaPropertyMap"/>
+        <property name="packagesToScan" value="com.nikulin.testtask.server.model.entity"/>
+    </bean>
+    <bean id="jpaPropertyMap" class="org.springframework.beans.factory.config.MapFactoryBean">
+        <property name="sourceMap">
+            <map>
+                <entry key="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
+                <entry key="hibernate.show_sql" value="true"/>
+                <entry key="hibernate.format_sql" value="true"/>
+                <entry key="hibernate.hbm2ddl.auto" value="validate"/>
+                <entry key="current_session_context_class" value="thread"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="userDetailsService"
+          class="org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <bean id="authProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+        <property name="userDetailsService" ref="userDetailsService" />
+        <property name="passwordEncoder" ref="encoder" />
+    </bean>
+
+    <security:authentication-manager>
+        <security:authentication-provider ref="authProvider"/>
+    </security:authentication-manager>
+
+    <security:http auto-config="true"  use-expressions="true">
+        <security:intercept-url pattern="/admin**" access="hasRole('ROLE_ADMIN')" />
+
+        <security:form-login
+                login-page="/login"
+                default-target-url="/welcome"
+                login-processing-url="/security_check"
+
+                authentication-failure-url="/login?error"
+                username-parameter="username"
+                password-parameter="password" />
+        <security:logout logout-success-url="/login" logout-url="/logout"  delete-cookies="JU"/>
+        <!-- enable csrf protection -->
+    <!--    <security:csrf/>-->
+    </security:http>
+    <security:global-method-security secured-annotations="enabled" />
+
+</beans>
