@@ -1,13 +1,13 @@
-package com.nikulin.testtask.web;
+package com.eis.portal.web;
 
-import com.nikulin.testtask.server.model.entity.User;
+import com.eis.portal.model.entity.User;
 import org.apache.log4j.Logger;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import com.nikulin.testtask.server.service.BasicUserService;
+import com.eis.portal.service.BasicUserService;
 
 import javax.annotation.Resource;
 import java.security.Principal;

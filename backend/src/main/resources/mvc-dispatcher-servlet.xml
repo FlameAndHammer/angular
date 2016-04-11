@@ -12,7 +12,7 @@
             http://www.springframework.org/schema/security
 	        http://www.springframework.org/schema/security/spring-security-4.0.xsd">
     <context:annotation-config/>
-    <context:component-scan base-package="com.nikulin.testtask"/>
+    <context:component-scan base-package="com.eis.portal"/>
     <mvc:annotation-driven/>
 
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -36,7 +36,7 @@
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
     </bean>
 
-    <jpa:repositories base-package="com.nikulin.testtask.server.dao.repository"/>
+    <jpa:repositories base-package="com.eis.portal.dao.repository"/>
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
           depends-on="flyway">
@@ -46,7 +46,7 @@
 
         <property name="dataSource" ref="dataSource"/>
         <property name="jpaPropertyMap" ref="jpaPropertyMap"/>
-        <property name="packagesToScan" value="com.nikulin.testtask.server.model.entity"/>
+        <property name="packagesToScan" value="com.eis.portal.model.entity"/>
     </bean>
     <bean id="jpaPropertyMap" class="org.springframework.beans.factory.config.MapFactoryBean">
         <property name="sourceMap">
@@ -87,6 +87,8 @@
                 username-parameter="username"
                 password-parameter="password" />
         <security:logout logout-success-url="/login" logout-url="/logout"  delete-cookies="JU"/>
+
+        <!--security:intercept-url pattern="/**" access="ROLE_USER" />-->
         <!-- enable csrf protection -->
     <!--    <security:csrf/>-->
     </security:http>
